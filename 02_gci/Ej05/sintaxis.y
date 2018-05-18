@@ -1,0 +1,75 @@
+%{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "y.tab.h"
+int yystopparser=0;
+FILE *yyin;
+
+char *aux;
+
+int yylex();
+int yyerror(char *);
+%}
+
+%union {
+int intval;
+char *str_val;
+}
+
+%token <intval>CTE
+%token <str_val>ID
+
+%token PYC
+%token OP_SUMA
+%token OP_RESTA
+%token OP_MULT
+%token OP_DIVIS
+%token OP_AS
+%token P_A
+%token P_C
+
+%start S
+
+%%
+
+S  : P                                    ;
+P  : _ID OP_AS P                          {	printf("P->id=P insertar_pol(=)\n");};
+P  : _ID OP_AS E PYC                      {	printf("P->id=E; insertar_pol(=)\n");};
+
+E : E OP_SUMA T                           {	printf("E->E+T insertar_pol(+)\n");}
+  | E OP_RESTA T                          {	printf("E->E-T insertar_pol(-)\n");}
+  | T                                     {	printf("E->T\n");};
+
+T : T OP_MULT F                           {	printf("T->T*F insertar_pol(*)\n");}
+  | T OP_DIVIS F                          {	printf("T->T*F insertar_pol(/)\n");}
+  | F                                     {	printf("T->F\n");};
+
+F : _ID
+  | CTE                                   {	printf("F->cte insertar_pol(%d)\n", yylval.intval);}
+  | P_A E P_C                             {	printf("F->(E)\n");};
+
+_ID : ID                                  {	aux = (char *) malloc(sizeof(char) * (strlen(yylval.str_val) + 1));
+                                            strcpy(aux, yylval.str_val);
+                                            printf("F->id insertar_pol(%s)\n", aux);}
+										  ;
+
+%%
+
+int main(int argc,char *argv[]) {
+  if ((yyin = fopen(argv[1], "rt")) == NULL) {
+		printf("\nNo se puede abrir el archivo: %s\n", argv[1]);
+  } else {
+    printf("\n");
+		yyparse();
+    printf("\n\n");
+  }
+
+  fclose(yyin);
+  return 0;
+}
+
+int yyerror(char * err) {
+	printf("\nSyntax Error. %s\n", err);
+	exit(1);
+}
