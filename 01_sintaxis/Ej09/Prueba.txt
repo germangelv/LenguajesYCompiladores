@@ -1,0 +1,3 @@
+INICIO
+	actual=promedio=contador= promedio/342+(contador*contador);
+FIN
